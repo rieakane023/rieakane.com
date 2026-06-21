@@ -1,0 +1,79 @@
+<h1 class="page-title">Audit trail</h1>
+
+<div class="toolbar">
+  <label class="field" style="margin: 0">
+    <span class="visually-hidden">Model</span>
+    <select class="field__select" aria-label="Filter by model" (change)="onModel($event)">
+      <option value="">All models</option>
+      @for (m of models(); track m) { <option [value]="m">{{ m }}</option> }
+    </select>
+  </label>
+  <select class="field__select" aria-label="Filter by action" (change)="onAction($event)">
+    <option value="">All actions</option>
+    <option value="create">Create</option>
+    <option value="update">Update</option>
+    <option value="delete">Delete</option>
+  </select>
+  <input class="field__input" type="search" placeholder="Search record…" aria-label="Search audit" (input)="onSearch($event)" />
+</div>
+
+@if (loading()) {
+  <div class="card">@for (i of [1,2,3,4,5]; track i) { <div class="skeleton-row"></div> }</div>
+} @else if (error()) {
+  <div class="state" role="alert"><p>⚠ Couldn't load the audit trail.</p><button class="btn btn--secondary" (click)="load()">Retry</button></div>
+} @else if (rows().length === 0) {
+  <div class="state"><p>No audit entries for this filter.</p></div>
+} @else {
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Changed on</th>
+          <th scope="col">Action</th>
+          <th scope="col">Model</th>
+          <th scope="col">Record</th>
+          <th scope="col">Changed by</th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (a of rows(); track a.id) {
+          <tr class="row" (click)="toggleExpand(a.id)">
+            <td>{{ a.timestamp | date: 'short' }}</td>
+            <td><span class="badge {{ actionBadge(a.action) }}">{{ a.action }}</span></td>
+            <td>{{ a.model }}</td>
+            <td>{{ a.object_repr || ('#' + a.object_id) }}</td>
+            <td>{{ a.changed_by ?? 'system' }}</td>
+            <td>{{ expandedId() === a.id ? '▾' : '▸' }}</td>
+          </tr>
+          @if (expandedId() === a.id) {
+            <tr class="detail">
+              <td colspan="6">
+                <table class="diff">
+                  <thead><tr><th>Field</th><th>Old data</th><th>New data</th></tr></thead>
+                  <tbody>
+                    @for (f of fields(a); track f.name) {
+                      <tr>
+                        <td class="diff__name">{{ f.name }}</td>
+                        <td class="diff__old">{{ display(f.old) }}</td>
+                        <td class="diff__new">{{ display(f.new) }}</td>
+                      </tr>
+                    } @empty {
+                      <tr><td colspan="3">No field-level changes recorded.</td></tr>
+                    }
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pager">
+    <button class="btn btn--secondary" [disabled]="page() <= 1" (click)="goTo(page() - 1)">Previous</button>
+    <span class="pager__info">{{ rangeStart() }}–{{ rangeEnd() }} of {{ count() }}</span>
+    <button class="btn btn--secondary" [disabled]="page() >= totalPages()" (click)="goTo(page() + 1)">Next</button>
+  </div>
+}

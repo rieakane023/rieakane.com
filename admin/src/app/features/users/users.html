@@ -1,0 +1,105 @@
+<h1 class="page-title">User management</h1>
+
+<div class="toolbar">
+  <input
+    class="field__input"
+    type="search"
+    placeholder="Search username, email, name…"
+    aria-label="Search users"
+    (input)="onSearch($event)"
+  />
+  <div class="spacer"></div>
+  @if (canManage()) {
+    <button class="btn btn--primary" (click)="showCreate.set(!showCreate())">
+      {{ showCreate() ? 'Cancel' : 'Add admin user' }}
+    </button>
+  }
+</div>
+
+@if (canManage() && showCreate()) {
+  <form class="card create" [formGroup]="form" (ngSubmit)="create()">
+    @if (createError()) { <p class="field__error" role="alert">⚠ {{ createError() }}</p> }
+    <div class="create__grid">
+      <div class="field">
+        <label class="field__label" for="u-username">Username</label>
+        <input id="u-username" class="field__input" formControlName="username" />
+      </div>
+      <div class="field">
+        <label class="field__label" for="u-email">Email</label>
+        <input id="u-email" class="field__input" type="email" formControlName="email" />
+      </div>
+      <div class="field">
+        <label class="field__label" for="u-role">Role</label>
+        <select id="u-role" class="field__select" formControlName="role">
+          @for (r of roles; track r) { <option [value]="r">{{ r }}</option> }
+        </select>
+      </div>
+      <div class="field">
+        <label class="field__label" for="u-pass">Temporary password</label>
+        <input id="u-pass" class="field__input" type="password" formControlName="password" autocomplete="new-password" />
+        @if (form.controls.password.touched && form.controls.password.invalid) {
+          <span class="field__error">At least 8 characters.</span>
+        }
+      </div>
+    </div>
+    <button type="submit" class="btn btn--primary">Create user</button>
+  </form>
+}
+
+@if (loading()) {
+  <div class="card">
+    @for (i of [1,2,3,4,5]; track i) { <div class="skeleton-row"></div> }
+  </div>
+} @else if (error()) {
+  <div class="state" role="alert">
+    <p>⚠ Couldn't load users.</p>
+    <button class="btn btn--secondary" (click)="load()">Retry</button>
+  </div>
+} @else if (rows().length === 0) {
+  <div class="state"><p>No users match your search.</p></div>
+} @else {
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Username</th>
+          <th scope="col">Email</th>
+          <th scope="col">Role</th>
+          <th scope="col">Status</th>
+          <th scope="col">Last login</th>
+          @if (canManage()) { <th scope="col">Actions</th> }
+        </tr>
+      </thead>
+      <tbody>
+        @for (u of rows(); track u.id) {
+          <tr>
+            <td>{{ u.username }}</td>
+            <td>{{ u.email || '—' }}</td>
+            <td><span class="badge badge--neutral">{{ u.role }}</span></td>
+            <td>
+              @if (u.is_active) {
+                <span class="badge badge--success">● Active</span>
+              } @else {
+                <span class="badge badge--error">○ Inactive</span>
+              }
+            </td>
+            <td>{{ u.last_login ? (u.last_login | date: 'short') : 'Never' }}</td>
+            @if (canManage()) {
+              <td>
+                @if (u.is_active) {
+                  <button class="btn btn--danger" (click)="deactivate(u)">Deactivate</button>
+                } @else { <span class="field__error">—</span> }
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pager">
+    <button class="btn btn--secondary" [disabled]="page() <= 1" (click)="goTo(page() - 1)">Previous</button>
+    <span class="pager__info">{{ rangeStart() }}–{{ rangeEnd() }} of {{ count() }}</span>
+    <button class="btn btn--secondary" [disabled]="page() >= totalPages()" (click)="goTo(page() + 1)">Next</button>
+  </div>
+}

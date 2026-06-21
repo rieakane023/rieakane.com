@@ -1,0 +1,25 @@
+.login {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: radial-gradient(
+    circle at 30% 20%,
+    color-mix(in srgb, var(--color-primary) 14%, var(--color-bg)),
+    var(--color-bg) 70%
+  );
+
+  &__card { width: 100%; max-width: 380px; }
+  &__title { font-size: var(--text-2xl); margin-bottom: var(--space-1); }
+  &__dot { color: var(--color-primary); }
+  &__sub { margin: 0 0 var(--space-5); color: var(--color-text-muted); font-size: var(--text-sm); }
+  &__submit { width: 100%; margin-top: var(--space-2); }
+  &__alert {
+    color: var(--color-error);
+    background: var(--color-error-bg);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    margin-bottom: var(--space-4);
+  }
+}

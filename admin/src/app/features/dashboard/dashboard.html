@@ -1,0 +1,23 @@
+<h1 class="page-title">Dashboard</h1>
+
+@if (loading()) {
+  <div class="metrics">
+    @for (i of [1, 2, 3]; track i) {
+      <div class="card"><div class="skeleton-row" style="width: 40%"></div><div class="skeleton-row" style="width: 70%"></div></div>
+    }
+  </div>
+} @else if (error()) {
+  <div class="state" role="alert">
+    <p>⚠ Couldn't load dashboard metrics.</p>
+    <button class="btn btn--secondary" (click)="load()">Retry</button>
+  </div>
+} @else {
+  <div class="metrics">
+    @for (m of metrics(); track m.label) {
+      <a class="card metric" [routerLink]="m.link">
+        <span class="metric__value metric__value--{{ m.tone }}">{{ m.value }}</span>
+        <span class="metric__label">{{ m.label }}</span>
+      </a>
+    }
+  </div>
+}

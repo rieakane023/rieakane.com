@@ -1,0 +1,72 @@
+<h1 class="page-title">Error logs</h1>
+
+<div class="toolbar">
+  <input class="field__input" type="search" placeholder="Search type, message, path…" aria-label="Search errors" (input)="onSearch($event)" />
+  <select class="field__select" aria-label="Filter by level" (change)="onLevel($event)">
+    <option value="">All levels</option>
+    <option value="error">Error</option>
+    <option value="warning">Warning</option>
+    <option value="critical">Critical</option>
+  </select>
+  <select class="field__select" aria-label="Filter by resolved" (change)="onResolved($event)">
+    <option value="">All</option>
+    <option value="false">Unresolved</option>
+    <option value="true">Resolved</option>
+  </select>
+</div>
+
+@if (loading()) {
+  <div class="card">@for (i of [1,2,3,4,5]; track i) { <div class="skeleton-row"></div> }</div>
+} @else if (error()) {
+  <div class="state" role="alert"><p>⚠ Couldn't load error logs.</p><button class="btn btn--secondary" (click)="load()">Retry</button></div>
+} @else if (rows().length === 0) {
+  <div class="state"><p>No errors recorded. 🎉</p></div>
+} @else {
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">When</th>
+          <th scope="col">Level</th>
+          <th scope="col">Type</th>
+          <th scope="col">Message</th>
+          <th scope="col">Path</th>
+          <th scope="col" class="num">Status</th>
+          <th scope="col">State</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (e of rows(); track e.id) {
+          <tr class="row" (click)="toggleExpand(e.id)">
+            <td>{{ e.timestamp | date: 'short' }}</td>
+            <td><span class="badge {{ badgeClass(e.level) }}">{{ e.level }}</span></td>
+            <td>{{ e.exception_type }}</td>
+            <td class="msg">{{ e.message }}</td>
+            <td>{{ e.method }} {{ e.path }}</td>
+            <td class="num">{{ e.status_code ?? '—' }}</td>
+            <td>
+              <button class="btn btn--ghost" (click)="$event.stopPropagation(); toggleResolved(e)">
+                @if (e.resolved) { <span class="badge badge--success">Resolved</span> }
+                @else { <span class="badge badge--warning">Open</span> }
+              </button>
+            </td>
+          </tr>
+          @if (expandedId() === e.id) {
+            <tr class="detail">
+              <td colspan="7">
+                <pre class="trace">{{ e.traceback || 'No traceback captured.' }}</pre>
+                <p class="detail__meta">User: {{ e.user ?? 'anonymous' }} · Request: {{ e.request_id || '—' }}</p>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pager">
+    <button class="btn btn--secondary" [disabled]="page() <= 1" (click)="goTo(page() - 1)">Previous</button>
+    <span class="pager__info">{{ rangeStart() }}–{{ rangeEnd() }} of {{ count() }}</span>
+    <button class="btn btn--secondary" [disabled]="page() >= totalPages()" (click)="goTo(page() + 1)">Next</button>
+  </div>
+}

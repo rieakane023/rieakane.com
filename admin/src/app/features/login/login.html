@@ -1,0 +1,38 @@
+<div class="login">
+  <form class="login__card card" [formGroup]="form" (ngSubmit)="submit()">
+    <h1 class="login__title">rieakane<span class="login__dot">.</span>admin</h1>
+    <p class="login__sub">Authorized personnel only.</p>
+
+    @if (error()) {
+      <p class="login__alert" role="alert">⚠ {{ error() }}</p>
+    }
+
+    <div class="field">
+      <label class="field__label" for="username">Username</label>
+      <input id="username" class="field__input" type="text" autocomplete="username" formControlName="username" />
+      @if (form.controls.username.touched && form.controls.username.invalid) {
+        <span class="field__error">Username is required.</span>
+      }
+    </div>
+
+    <div class="field">
+      <label class="field__label" for="password">Password</label>
+      <input id="password" class="field__input" type="password" autocomplete="current-password" formControlName="password" />
+      @if (form.controls.password.touched && form.controls.password.invalid) {
+        <span class="field__error">Password is required.</span>
+      }
+    </div>
+
+    @if (mfaNeeded()) {
+      <div class="field">
+        <label class="field__label" for="otp">Authentication code</label>
+        <input id="otp" class="field__input" type="text" inputmode="numeric" autocomplete="one-time-code" formControlName="otpToken" />
+        <span class="field__error">Enter the 6-digit code from your authenticator app.</span>
+      </div>
+    }
+
+    <button type="submit" class="btn btn--primary login__submit" [disabled]="submitting()">
+      {{ submitting() ? 'Signing in…' : 'Sign in' }}
+    </button>
+  </form>
+</div>
