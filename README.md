@@ -4,9 +4,9 @@ Personal website of **Rie Akane**. Monorepo containing the frontend and backend.
 
 ```
 rieakane.com/
-├── frontend/            # Angular single-page app (runs locally)
-├── backend/             # Django + DRF API (runs in Docker)
-└── docker-compose.yml   # Postgres + Django backend
+├── frontend/                  # Angular single-page app (runs locally)
+└── backend/                   # Django + DRF API (runs in Docker)
+    └── docker-compose.yml     # Postgres + Django backend
 ```
 
 ## Prerequisites
@@ -16,9 +16,11 @@ rieakane.com/
 
 ## Backend (Docker)
 
-The backend (Django) and PostgreSQL run in Docker:
+The backend (Django) and PostgreSQL run in Docker. Run these from the
+`backend/` directory (where `docker-compose.yml` lives):
 
 ```bash
+cd backend
 docker compose up --build           # starts Postgres + Django on :8000
 docker compose exec backend python manage.py migrate
 docker compose exec backend python manage.py createsuperuser   # optional
