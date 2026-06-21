@@ -1,3 +1,1 @@
-from django.db import models
-
-# Create your models here.
+# The public API app has no models yet (health is a stateless endpoint).

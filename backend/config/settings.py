@@ -56,10 +56,20 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Third-party
     "rest_framework",
+    "rest_framework.authtoken",
+    "django_filters",
     "corsheaders",
+    "django_otp",
+    "django_otp.plugins.otp_totp",
     # Local
+    "accounts",
+    "audit",
+    "adminpanel",
     "api",
 ]
+
+# Custom user model — set from the first migration (django.md §11).
+AUTH_USER_MODEL = "accounts.User"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -69,14 +79,20 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    # django-otp must come right after AuthenticationMiddleware.
+    "django_otp.middleware.OTPMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # Audit: capture the acting user + persist unhandled exceptions to the DB.
+    "audit.middleware.CurrentUserMiddleware",
+    "audit.middleware.ExceptionLoggingMiddleware",
 ]
 
-# CORS — allow the Angular dev server (and configured prod origins) to call the API.
+# CORS — explicit allowlist only (security-django.md §11). Public frontend on
+# :4200, admin app on :4300. Never use CORS_ALLOW_ALL_ORIGINS.
 CORS_ALLOWED_ORIGINS = env_list(
     "DJANGO_CORS_ALLOWED_ORIGINS",
-    "http://localhost:4200,http://127.0.0.1:4200",
+    "http://localhost:4200,http://127.0.0.1:4200,http://localhost:4300,http://127.0.0.1:4300",
 )
 CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS", "")
 
@@ -168,11 +184,83 @@ STORAGES = {
     },
 }
 
-# Django REST Framework
+# Argon2 first for password hashing (security-django.md §7).
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
+    "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
+]
+
+# Django REST Framework — default-deny, throttled, paginated (security-django.md §14).
 REST_FRAMEWORK = {
-    "DEFAULT_RENDERER_CLASSES": [
-        "rest_framework.renderers.JSONRenderer",
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    "DEFAULT_RENDERER_CLASSES": (
+        ["rest_framework.renderers.JSONRenderer", "rest_framework.renderers.BrowsableAPIRenderer"]
+        if DEBUG
+        else ["rest_framework.renderers.JSONRenderer"]
+    ),
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
+    ],
+    "DEFAULT_PAGINATION_CLASS": "adminpanel.pagination.AdminPagination",
+    "PAGE_SIZE": 25,
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "60/min",
+        "user": "1000/day",
+        "login": "10/min",  # brute-force guard on admin login (security.md §3.2)
+    },
+    "EXCEPTION_HANDLER": "audit.exceptions.drf_exception_handler",
+}
+
+# Admin support config (audit signals + MFA enforcement).
+AUDIT_TRACKED_APPS = env_list("DJANGO_AUDIT_TRACKED_APPS", "accounts,api")
+# Require MFA for admin login. Off in DEBUG for local dev convenience; the
+# production checklist (security.md §3.2) requires it ON.
+REQUIRE_MFA = env_bool("DJANGO_REQUIRE_MFA", not DEBUG)
+
+# Non-default admin URL to cut automated scanning (security.md §3.4).
+ADMIN_URL = os.getenv("DJANGO_ADMIN_URL", "control-panel/")
+
+# -----------------------------------------------------------------------------
+# Production security hardening — applied when DEBUG is off (security-django.md).
+# Run `python manage.py check --deploy` before release.
+# -----------------------------------------------------------------------------
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+X_FRAME_OPTIONS = "DENY"
+
+# Structured logging — audit logger never silently fails (django.md §15).
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "root": {"handlers": ["console"], "level": "INFO"},
+    "loggers": {"audit": {"handlers": ["console"], "level": "WARNING", "propagate": False}},
 }
 
 # Default primary key field type

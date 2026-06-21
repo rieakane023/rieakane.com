@@ -1,6 +1,15 @@
+# Single requirements file — dev mirrors production (same image, same packages).
+# The only dev/prod difference is the database (local Docker Postgres / SQLite
+# fallback) and the compose `command`. Test & lint tooling is included so the
+# suite runs in the exact production image.
+
+# ---- Runtime ----
 Django==5.2.15
 asgiref==3.11.1
+argon2-cffi==23.1.0
 django-cors-headers==4.9.0
+django-filter==25.1
+django-otp==1.5.4
 djangorestframework==3.17.1
 gunicorn==26.0.0
 packaging==26.2
@@ -8,3 +17,10 @@ psycopg[binary]>=3.2,<3.3
 python-dotenv==1.2.2
 sqlparse==0.5.5
 whitenoise==6.12.0
+
+# ---- Tests & quality (run in the same image for parity) ----
+pytest==8.4.1
+pytest-django==4.11.1
+factory_boy==3.3.1
+pip-audit==2.9.0
+ruff==0.13.0

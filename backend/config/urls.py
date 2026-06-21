@@ -16,9 +16,14 @@ Including another URLconf
 """
 
 from django.contrib import admin
+from django.conf import settings
 from django.urls import include, path
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    # Django admin at a non-default, env-configurable URL (security.md §3.4).
+    path(settings.ADMIN_URL, admin.site.urls),
+    # Public API (health, future public endpoints).
     path("api/", include("api.urls")),
+    # Admin-only API for the separate admin app (versioned).
+    path("api/v1/admin/", include("adminpanel.urls")),
 ]
