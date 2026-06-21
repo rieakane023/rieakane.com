@@ -1,0 +1,16 @@
+# Root-level ignores. Each package has its own .gitignore:
+#   backend/.gitignore   — Python / Django
+#   frontend/.gitignore  — Node / Angular
+
+# ---- OS ----
+.DS_Store
+Thumbs.db
+
+# ---- Editors ----
+.idea/
+*.swp
+
+# ---- Secrets / env (belt-and-suspenders) ----
+.env
+.env.*
+!.env.example

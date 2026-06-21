@@ -1,0 +1,42 @@
+.hero {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 2rem;
+  background: radial-gradient(circle at 30% 20%, #1f2937, #0b0f17 70%);
+  color: #f8fafc;
+}
+
+.hero__eyebrow {
+  margin: 0;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.hero__title {
+  margin: 0.25rem 0 1rem;
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  font-weight: 700;
+}
+
+.hero__tagline {
+  margin: 0 0 2rem;
+  font-size: 1.1rem;
+  color: #cbd5e1;
+}
+
+.hero__status {
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+.hero__badge {
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: #1e293b;
+  color: #34d399;
+  font-family: monospace;
+}
