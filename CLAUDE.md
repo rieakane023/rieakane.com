@@ -11,7 +11,9 @@ UI/UX, testing, and security practices.
 
 Monorepo for a personal website:
 
-- `frontend/` — Angular single-page app (runs locally)
+- `frontend/` — Angular public single-page app (runs locally)
 - `backend/` — Django + DRF API, Dockerized with PostgreSQL
+- `admin/` — Angular admin panel (internal only; never publicly reachable)
+- `shared/` — shared design tokens (single source of truth for colors/theming)
 
 See `README.md` and the per-package READMEs for setup and commands.
