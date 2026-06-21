@@ -1,0 +1,182 @@
+// =============================================================================
+// rieakane.com — Global design tokens (SINGLE SOURCE OF TRUTH)
+// -----------------------------------------------------------------------------
+// This is the ONLY file in the project that defines raw color values, spacing,
+// type, radius, motion and z-index. Both the public `frontend/` app and the
+// `admin/` app consume it via Angular `stylePreprocessorOptions.includePaths`
+// (`@use 'tokens'`). NEVER hardcode a hex value in a component — reference a
+// semantic CSS custom property (`var(--color-...)`) instead.
+//
+// Theming model (per uiux.md §3):
+//   • Brand primary/secondary are CONSTANT across every mode.
+//   • Light + dark modes swap only the neutral / surface / text layer.
+//   • Color-vision-deficiency (CVD) modes remap the SEMANTIC + accent colors so
+//     meaning survives; color is never the sole signal (always pair with icon/
+//     label/shape in components).
+//
+// Switching is attribute-driven so it works at runtime:
+//   <html data-theme="light|dark" data-cvd="none|deuteranopia|protanopia|
+//         tritanopia|grayscale">
+//   With no data-theme, the OS `prefers-color-scheme` is respected.
+// =============================================================================
+
+// ---- Brand anchors (CONSTANT across all themes/modes) -----------------------
+// Primary  = #DB2777 (pink-600)   Secondary = #FBCFE8 (pink-200)
+$brand-primary: #db2777;
+$brand-secondary: #fbcfe8;
+
+// -----------------------------------------------------------------------------
+// Non-color tokens (mode-independent)
+// -----------------------------------------------------------------------------
+:root {
+  // Spacing — 8-pt system (uiux.md §2). Use these everywhere; no one-off px.
+  --space-0: 0;
+  --space-1: 0.25rem; //  4px
+  --space-2: 0.5rem;  //  8px
+  --space-3: 0.75rem; // 12px
+  --space-4: 1rem;    // 16px
+  --space-5: 1.5rem;  // 24px
+  --space-6: 2rem;    // 32px
+  --space-7: 3rem;    // 48px
+  --space-8: 4rem;    // 64px
+
+  // Radius
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  // Typography
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --text-xs: 0.75rem;   // 12
+  --text-sm: 0.875rem;  // 14
+  --text-base: 1rem;    // 16 (body min)
+  --text-lg: 1.25rem;   // 20
+  --text-xl: 1.5rem;    // 24
+  --text-2xl: 2rem;     // 32
+  --text-3xl: 2.5rem;   // 40
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-bold: 700;
+
+  // Motion (uiux.md §11) — respect prefers-reduced-motion in components.
+  --motion-fast: 120ms;
+  --motion-base: 200ms;
+  --motion-slow: 300ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+
+  // Z-index scale (uiux.md §2)
+  --z-base: 0;
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-modal: 1300;
+  --z-toast: 1400;
+  --z-tooltip: 1500;
+
+  // Brand — constant in every mode.
+  --color-primary: #{$brand-primary};
+  --color-primary-hover: #be185d;  // pink-700
+  --color-primary-active: #9d174d; // pink-800
+  --color-on-primary: #ffffff;     // text/icon on primary fills (UI ≥3:1)
+  --color-secondary: #{$brand-secondary};
+  --color-secondary-strong: #be185d; // readable derivative for text/borders
+  --color-on-secondary: #500724;     // pink-950, text on the pale secondary
+
+  // Destructive fill — kept constant (and dark enough) so white text always
+  // passes contrast, unlike the mode-variable --color-error used for text/icons.
+  --color-error-strong: #dc2626;     // red-600
+  --color-on-error: #ffffff;
+}
+
+// -----------------------------------------------------------------------------
+// LIGHT mode (default) — neutral / surface / text + semantic layer
+// -----------------------------------------------------------------------------
+@mixin light-palette {
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-2: #f8fafc;   // raised/alt rows
+  --color-surface-3: #f1f5f9;
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1;
+  --color-text: #0f172a;        // slate-900
+  --color-text-muted: #475569;  // slate-600 (≥4.5:1 on bg)
+  --color-text-subtle: #64748b; // slate-500 (large/secondary only)
+  --color-overlay: rgba(15, 23, 42, 0.45);
+  --color-focus: #2563eb;       // visible focus ring
+
+  // Semantic (paired with icon/label in components — never color alone)
+  --color-success: #15803d; --color-success-bg: #dcfce7;
+  --color-warning: #b45309; --color-warning-bg: #fef3c7;
+  --color-error: #dc2626;   --color-error-bg: #fee2e2;
+  --color-info: #2563eb;    --color-info-bg: #dbeafe;
+}
+
+@mixin dark-palette {
+  --color-bg: #0b0f17;
+  --color-surface: #111827;     // gray-900-ish (not pure black)
+  --color-surface-2: #1e293b;
+  --color-surface-3: #273449;
+  --color-border: #334155;
+  --color-border-strong: #475569;
+  --color-text: #f1f5f9;
+  --color-text-muted: #cbd5e1;
+  --color-text-subtle: #94a3b8;
+  --color-overlay: rgba(0, 0, 0, 0.6);
+  --color-focus: #60a5fa;
+
+  --color-success: #4ade80; --color-success-bg: #14321f;
+  --color-warning: #fbbf24; --color-warning-bg: #3a2a08;
+  --color-error: #f87171;   --color-error-bg: #3b1414;
+  --color-info: #60a5fa;    --color-info-bg: #112138;
+}
+
+// Default = light. Respect OS dark preference when no explicit data-theme.
+:root { @include light-palette; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { @include dark-palette; }
+}
+// Explicit manual overrides (toggle wins over OS).
+[data-theme="light"] { @include light-palette; }
+[data-theme="dark"]  { @include dark-palette; }
+
+// -----------------------------------------------------------------------------
+// CVD modes — remap semantic + accent so meaning stays distinguishable.
+// Layered on top of light/dark (only overrides the functional colors).
+// Validate the DEFAULT palette with a CVD simulator; these are opt-in extras.
+// -----------------------------------------------------------------------------
+
+// Red-green deficiencies (deuteranopia / protanopia): avoid red-vs-green pairs;
+// lean on blue (positive) vs orange (negative) which both types separate well.
+@mixin cvd-redgreen {
+  --color-success: #1d4ed8; --color-success-bg: #dbeafe; // blue
+  --color-error:   #c2410c; --color-error-bg:   #ffedd5; // orange
+  --color-warning: #a16207; --color-warning-bg: #fef9c3; // dark yellow
+  --color-info:    #6d28d9; --color-info-bg:    #ede9fe; // violet
+}
+[data-cvd="deuteranopia"], [data-cvd="protanopia"] { @include cvd-redgreen; }
+
+// Tritanopia (blue-yellow weak): avoid blue/yellow pairs; use red vs teal.
+[data-cvd="tritanopia"] {
+  --color-success: #0f766e; --color-success-bg: #ccfbf1; // teal
+  --color-error:   #be123c; --color-error-bg:   #ffe4e6; // rose
+  --color-warning: #9d174d; --color-warning-bg: #fce7f3; // magenta
+  --color-info:    #1f2937; --color-info-bg:    #e5e7eb; // neutral
+}
+
+// Achromatopsia / monochromacy: encode meaning by LIGHTNESS only; components
+// must also rely on icon/shape/label. Distinct gray steps for each state.
+[data-cvd="grayscale"] {
+  --color-primary: #3f3f46; --color-primary-hover: #27272a; --color-primary-active: #18181b;
+  --color-on-primary: #ffffff;
+  --color-secondary: #d4d4d8; --color-secondary-strong: #52525b; --color-on-secondary: #18181b;
+  --color-success: #404040; --color-success-bg: #e5e5e5;
+  --color-warning: #525252; --color-warning-bg: #ededed;
+  --color-error:   #171717; --color-error-bg:   #d4d4d4;
+  --color-info:    #737373; --color-info-bg:    #f5f5f5;
+  --color-focus:   #000000;
+}

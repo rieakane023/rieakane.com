@@ -1,42 +1,103 @@
+// Component styles reference design tokens only — no hardcoded hex (uiux.md §3).
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+
+  &__brand {
+    font-weight: var(--weight-bold);
+    color: var(--color-primary);
+    letter-spacing: 0.02em;
+  }
+
+  &__controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+}
+
+.control {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+
+  &__label {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+
+  &__select,
+  &__toggle {
+    min-height: 44px; // hit target (uiux.md §6)
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--color-text);
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: border-color var(--motion-fast) var(--ease-out),
+      background var(--motion-fast) var(--ease-out);
+  }
+
+  &__toggle:hover {
+    border-color: var(--color-primary);
+  }
+}
+
 .hero {
-  min-height: 100dvh;
+  min-height: calc(100dvh - 64px);
   display: grid;
   place-items: center;
   text-align: center;
-  padding: 2rem;
-  background: radial-gradient(circle at 30% 20%, #1f2937, #0b0f17 70%);
-  color: #f8fafc;
+  padding: var(--space-6);
+  background:
+    radial-gradient(
+      circle at 30% 20%,
+      color-mix(in srgb, var(--color-primary) 18%, var(--color-bg)),
+      var(--color-bg) 70%
+    );
+  color: var(--color-text);
 }
 
 .hero__eyebrow {
   margin: 0;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  font-size: 0.8rem;
-  color: #94a3b8;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
 }
 
 .hero__title {
-  margin: 0.25rem 0 1rem;
+  margin: var(--space-1) 0 var(--space-4);
   font-size: clamp(2.5rem, 8vw, 5rem);
-  font-weight: 700;
+  font-weight: var(--weight-bold);
 }
 
 .hero__tagline {
-  margin: 0 0 2rem;
-  font-size: 1.1rem;
-  color: #cbd5e1;
+  margin: 0 0 var(--space-6);
+  font-size: var(--text-lg);
+  color: var(--color-text-muted);
 }
 
 .hero__status {
-  font-size: 0.9rem;
-  color: #94a3b8;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
 }
 
 .hero__badge {
-  padding: 0.15rem 0.6rem;
-  border-radius: 999px;
-  background: #1e293b;
-  color: #34d399;
-  font-family: monospace;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  font-family: var(--font-mono);
 }

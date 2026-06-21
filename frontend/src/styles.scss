@@ -1,1 +1,5 @@
-/* You can add global styles to this file, and also import other style files */
+// Global styles for the public frontend.
+// All design tokens come from the project's single source of truth
+// (shared/styles/_tokens.scss), wired via angular.json includePaths.
+@use 'tokens';
+@use 'base';

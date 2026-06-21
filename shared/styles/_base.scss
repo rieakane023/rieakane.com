@@ -1,0 +1,45 @@
+// =============================================================================
+// Shared base / reset — token-driven. Consumed by both apps after `_tokens`.
+// =============================================================================
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);   // 16px min
+  line-height: var(--leading-normal);
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4 { line-height: var(--leading-tight); margin: 0 0 var(--space-3); }
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  &:hover { color: var(--color-primary-hover); text-decoration: underline; }
+}
+
+// Visible focus is mandatory (uiux.md §6 / a11y). Never remove without replacing.
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+// Respect reduced-motion globally.
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
