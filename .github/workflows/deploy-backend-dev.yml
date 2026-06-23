@@ -27,6 +27,9 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Hoist the secret into env so steps can branch on whether it's configured.
+    env:
+      RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
     defaults:
       run:
         working-directory: backend
@@ -53,6 +56,9 @@ jobs:
         run: python manage.py check --deploy --fail-level WARNING
 
       - name: Trigger Render deploy
+        if: ${{ env.RENDER_DEPLOY_HOOK_URL != '' }}
         run: curl -fsS -X POST "$RENDER_DEPLOY_HOOK_URL"
-        env:
-          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+
+      - name: Skip deploy (Render hook not configured yet)
+        if: ${{ env.RENDER_DEPLOY_HOOK_URL == '' }}
+        run: echo "::notice::Gates passed. RENDER_DEPLOY_HOOK_URL is not set, so the Render deploy was skipped. Add the secret to enable it."
