@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { RouterOutlet } from '@angular/router';
 import { CvdMode, ThemeService } from './core/theme.service';
+import { environment } from '../environments/environment';
 
 interface Health {
   status: string;
@@ -35,7 +36,7 @@ export class App {
   });
 
   constructor() {
-    this.http.get<Health>('/api/health/').subscribe({
+    this.http.get<Health>(`${environment.apiBaseUrl}/api/health/`).subscribe({
       next: (res) => this.apiStatus.set(res.status),
       error: () => this.apiStatus.set('unreachable'),
     });

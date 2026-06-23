@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AdminUser, AuditLog, ErrorLog, Paginated } from './models';
+import { environment } from '../../environments/environment';
 
 export interface ListQuery {
   page?: number;
@@ -15,7 +16,7 @@ export interface ListQuery {
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);
-  private readonly base = '/api/v1/admin';
+  private readonly base = `${environment.apiBaseUrl}/api/v1/admin`;
 
   private params(query: ListQuery = {}): HttpParams {
     let p = new HttpParams();

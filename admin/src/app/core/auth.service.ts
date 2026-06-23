@@ -2,6 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { CurrentAdmin, LoginResponse } from './models';
+import { environment } from '../../environments/environment';
 
 const TOKEN_KEY = 'rieakane-admin:token';
 
@@ -14,7 +15,7 @@ const TOKEN_KEY = 'rieakane-admin:token';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
-  private readonly base = '/api/v1/admin';
+  private readonly base = `${environment.apiBaseUrl}/api/v1/admin`;
 
   readonly token = signal<string | null>(this.read());
   readonly user = signal<CurrentAdmin | null>(null);
