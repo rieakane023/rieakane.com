@@ -1,0 +1,58 @@
+# Deploy the Django backend to the DEV environment (Render) on every push to
+# `development`. GitHub Actions runs the test + deploy-check gate, then triggers
+# Render via a deploy hook (Render does the Docker build + migrate + release).
+# See deployments-render.md.
+#
+# Required GitHub repo secret:
+#   RENDER_DEPLOY_HOOK_URL - the service's Deploy Hook URL
+#     (Render → service → Settings → Deploy Hook). It contains a key — keep secret.
+# In Render, set the service's Auto-Deploy to OFF so only this workflow deploys.
+name: deploy-backend-dev
+
+on:
+  push:
+    branches: [development]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-backend-dev.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-backend-dev-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Unit tests (gate)
+        run: python -m pytest
+
+      - name: Production deploy check (gate)
+        env:
+          DJANGO_DEBUG: 'False'
+          DJANGO_SECRET_KEY: ci-only-not-a-real-secret-please-rotate-0123456789abcdef
+          DJANGO_ALLOWED_HOSTS: example.com
+        run: python manage.py check --deploy --fail-level WARNING
+
+      - name: Trigger Render deploy
+        run: curl -fsS -X POST "$RENDER_DEPLOY_HOOK_URL"
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}

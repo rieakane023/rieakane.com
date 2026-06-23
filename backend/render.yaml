@@ -1,0 +1,40 @@
+# Render Blueprint for the DEV backend (Docker web service). See
+# deployments-render.md. Create it via Render → New → Blueprint → connect this repo,
+# and set Blueprint Path = backend/render.yaml (this file lives in backend/, but
+# `rootDir: backend` below is still resolved from the repo root).
+#
+# Deploys are triggered by GitHub Actions (deploy-backend-dev.yml) after the test
+# gate passes — autoDeploy is off so Render doesn't also build on raw pushes.
+# The database lives on Supabase: set DATABASE_URL (pooled connstring) as a secret
+# in the Render dashboard (it's marked sync:false below).
+services:
+  - type: web
+    name: rieakane-backend-dev
+    runtime: docker
+    rootDir: backend
+    plan: free
+    branch: development
+    autoDeploy: false
+    healthCheckPath: /api/health/
+    # Run migrations before the new version goes live (against the Supabase
+    # direct connection if you keep a separate one — see deployments-supabase.md).
+    preDeployCommand: python manage.py migrate --noinput
+    envVars:
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true # Render generates a strong 256-bit value
+      - key: DJANGO_REQUIRE_MFA
+        value: "True"
+      # Pooled Supabase connection string — set as a secret in the dashboard.
+      - key: DATABASE_URL
+        sync: false
+      # Custom domains / extra hosts (the *.onrender.com host is trusted
+      # automatically). Set when you add a domain.
+      - key: DJANGO_ALLOWED_HOSTS
+        sync: false
+      - key: DJANGO_CSRF_TRUSTED_ORIGINS
+        sync: false
+      # Allow the deployed frontend + admin origins (Cloudflare Pages URLs).
+      - key: DJANGO_CORS_ALLOWED_ORIGINS
+        sync: false
