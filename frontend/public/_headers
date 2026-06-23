@@ -1,0 +1,6 @@
+# Baseline security headers for the public site (set at the Cloudflare Pages edge).
+# CSP is intentionally omitted here — add a tuned policy before production.
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY

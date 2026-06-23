@@ -1,0 +1,64 @@
+# Deploy the internal admin SPA to the DEV environment (Cloudflare Pages) on every
+# push to `development`. The admin is internal-only — put the Pages project behind
+# Cloudflare Access (Zero Trust) so only you + your team can reach it, and keep it
+# noindex. See deployments-cloudflare.md §3 and security.md §3.
+#
+# Required GitHub repo secrets:
+#   CLOUDFLARE_API_TOKEN   - token with the "Cloudflare Pages: Edit" permission
+#   CLOUDFLARE_ACCOUNT_ID  - your Cloudflare account id
+# Prerequisite: create a SEPARATE Pages project named `rieakane-admin`.
+name: deploy-admin-dev
+
+on:
+  push:
+    branches: [development]
+    paths:
+      - 'admin/**'
+      - 'shared/**'
+      - '.github/workflows/deploy-admin-dev.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-admin-dev-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CF_PROJECT: rieakane-admin
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: admin
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: admin/package-lock.json
+
+      - name: Install (clean, from lockfile)
+        run: npm ci
+
+      - name: Unit tests (gate)
+        run: npx ng test --watch=false
+
+      - name: Production build
+        run: npx ng build --configuration production
+
+      - name: Deploy to Cloudflare Pages (dev)
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: >-
+            pages deploy admin/dist/admin/browser
+            --project-name=${{ env.CF_PROJECT }}
+            --branch=development
+          workingDirectory: '.'

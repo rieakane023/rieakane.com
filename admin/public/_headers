@@ -1,0 +1,8 @@
+# Security headers for the INTERNAL admin (Cloudflare Pages edge).
+# Keep it out of search engines; real access control is Cloudflare Access + the
+# backend (security.md §3). CSP omitted here — add a tuned policy before production.
+/*
+  X-Robots-Tag: noindex, nofollow
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
