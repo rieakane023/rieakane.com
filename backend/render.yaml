@@ -16,9 +16,8 @@ services:
     branch: development
     autoDeploy: false
     healthCheckPath: /api/health/
-    # Run migrations before the new version goes live (against the Supabase
-    # direct connection if you keep a separate one — see deployments-supabase.md).
-    preDeployCommand: python manage.py migrate --noinput
+    # NOTE: preDeployCommand is a paid feature. On free tier, migrations run at
+    # container startup instead (see the Dockerfile CMD: `migrate && gunicorn`).
     envVars:
       - key: DJANGO_DEBUG
         value: "False"

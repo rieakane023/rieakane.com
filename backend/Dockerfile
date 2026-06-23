@@ -17,8 +17,9 @@ RUN python manage.py collectstatic --noinput
 
 EXPOSE 8000
 
-# Production default. Binds the platform-provided $PORT (Render/Cloud Run),
+# Production default. Runs migrations at startup (Render free tier has no
+# pre-deploy command), then binds the platform-provided $PORT (Render/Cloud Run),
 # falling back to 8000 locally. `sh -c … exec` lets $PORT expand while gunicorn
 # still becomes PID 1 and receives OS signals (clean shutdown). The dev compose
-# file overrides this with `runserver`.
-CMD ["sh", "-c", "exec gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 3"]
+# file overrides this with its own `migrate && runserver`.
+CMD ["sh", "-c", "python manage.py migrate --noinput && exec gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 3"]
