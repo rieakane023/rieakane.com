@@ -2,6 +2,9 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthService } from './auth.service';
+import { environment } from '../../environments/environment';
+
+const LOGIN_URL = `${environment.apiBaseUrl}/api/v1/admin/auth/login/`;
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -25,7 +28,7 @@ describe('AuthService', () => {
   it('stores token + user on successful login', () => {
     service.login('rie', 'pass-w0rd-123').subscribe();
 
-    const req = httpMock.expectOne('/api/v1/admin/auth/login/');
+    const req = httpMock.expectOne(LOGIN_URL);
     expect(req.request.method).toBe('POST');
     expect(req.request.body.otp_token).toBe('');
     req.flush({

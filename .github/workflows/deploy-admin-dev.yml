@@ -49,8 +49,8 @@ jobs:
       - name: Unit tests (gate)
         run: npx ng test --watch=false
 
-      - name: Production build
-        run: npx ng build --configuration production
+      - name: Build (dev environment)
+        run: npx ng build --configuration development
 
       - name: Deploy to Cloudflare Pages (dev)
         uses: cloudflare/wrangler-action@v3

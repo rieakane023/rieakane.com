@@ -3,6 +3,9 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 import { Login } from './login';
+import { environment } from '../../../environments/environment';
+
+const LOGIN_URL = `${environment.apiBaseUrl}/api/v1/admin/auth/login/`;
 
 describe('Login', () => {
   let httpMock: HttpTestingController;
@@ -22,7 +25,7 @@ describe('Login', () => {
     const fixture = TestBed.createComponent(Login);
     fixture.detectChanges();
     fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
-    httpMock.expectNone('/api/v1/admin/auth/login/');
+    httpMock.expectNone(LOGIN_URL);
   });
 
   it('reveals the MFA field when the server requires it', async () => {
@@ -35,7 +38,7 @@ describe('Login', () => {
     cmp.form.setValue({ username: 'rie', password: 'pass-w0rd-123', otpToken: '' });
     cmp.submit();
 
-    const req = httpMock.expectOne('/api/v1/admin/auth/login/');
+    const req = httpMock.expectOne(LOGIN_URL);
     req.flush({ otp_token: ['An MFA code is required.'] }, { status: 400, statusText: 'Bad Request' });
 
     await fixture.whenStable();
