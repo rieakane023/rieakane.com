@@ -44,6 +44,12 @@ DEBUG = env_bool("DJANGO_DEBUG", True)
 
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1")
 
+# Render injects the service's external hostname — trust it automatically so we
+# don't have to hardcode the *.onrender.com host in ALLOWED_HOSTS.
+_render_host = os.getenv("RENDER_EXTERNAL_HOSTNAME")
+if _render_host and _render_host not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(_render_host)
+
 
 # Application definition
 
@@ -118,10 +124,25 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-# Uses PostgreSQL when POSTGRES_DB is set (e.g. via docker compose),
-# otherwise falls back to a local SQLite file.
+# Resolution order:
+#   1. DATABASE_URL  — managed Postgres on a host (Render / Supabase). Preferred.
+#   2. POSTGRES_DB   — discrete vars (local docker compose).
+#   3. SQLite        — local fallback when nothing is configured.
 
-if os.getenv("POSTGRES_DB"):
+if os.getenv("DATABASE_URL"):
+    import dj_database_url
+
+    DATABASES = {
+        "default": dj_database_url.parse(
+            os.getenv("DATABASE_URL"),
+            # Poolers (Supabase/Neon) want short-lived conns + no server-side cursors.
+            conn_max_age=0,
+            ssl_require=True,
+        )
+    }
+    # Required when connecting through a transaction-mode pooler (Supabase :6543).
+    DATABASES["default"].setdefault("DISABLE_SERVER_SIDE_CURSORS", True)
+elif os.getenv("POSTGRES_DB"):
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",

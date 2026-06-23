@@ -11,7 +11,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+# Bake static files into the image (WhiteNoise serves them). Safe at build time:
+# collectstatic doesn't touch the database.
+RUN python manage.py collectstatic --noinput
+
 EXPOSE 8000
 
-# Production default. The dev compose file overrides this with `runserver`.
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000"]
+# Production default. Binds the platform-provided $PORT (Render/Cloud Run),
+# falling back to 8000 locally. `sh -c … exec` lets $PORT expand while gunicorn
+# still becomes PID 1 and receives OS signals (clean shutdown). The dev compose
+# file overrides this with `runserver`.
+CMD ["sh", "-c", "exec gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 3"]
